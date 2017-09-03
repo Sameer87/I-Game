@@ -1,4 +1,4 @@
-﻿# ESP Game
+﻿# I Game
 
 
 Let’s suppose we have Player A and Player B. There are 15 questions in the system (i.e. 15 primary images). Each time Player A starts the game, he/she is shown 5 random primary images and secondary images corresponding to the primary image. 
