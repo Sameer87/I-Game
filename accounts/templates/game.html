@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+  <h2>Welcome,  <small>{{ user.username }}</small>!</h2>
+  <hr>
+  <div class="container bg-light text-gray-dark" id="question"></div>
+  <!--{% for x in que %}
+    <img src="{{ x.Primary_img.url }}" height="200" width="300">
+    <br>
+    <img src="{{ x.option1.url }}"height="200" width="300">
+    <img src="{{ x.option2.url }}"height="200" width="300">
+    <img src="{{ x.option3.url }}"height="200" width="300">
+    <br>
+    <br>
+  {% endfor %} -->
+{% endblock %}
+
+{% block static %}
+<script type="text/javascript">
+	a=[]
+	con={{ con }}
+	que=[]
+	{% for x in que %}
+	b=[]
+	que.push({{ x.id }});
+	b[0]="{{ x.Primary_img.url }}";
+	b[1]="{{ x.option1.url }}";
+	b[2]="{{ x.option2.url }}";
+	b[3]="{{ x.option3.url }}";
+	a.push(b);
+	{% endfor %}
+	i=0
+	ans=[]
+	if (i==0){
+		console.log(con);
+		next();
+	}
+	function tick(id,val){
+		ans[id]=val;
+		next();
+	}
+	function send(){
+		$.ajax({
+                  url: "/check/",
+                  type:'POST',
+                  data:{'ans':ans,'que':que,'con':con,'csrfmiddlewaretoken': "{{ csrf_token }}"},
+                  
+                  success: function(result){
+                  		window.location.href="/";
+		},
+		error: function(result){
+			alert("connection is lost !!. wait and retry");
+		}
+	});
+	}
+	function next(){
+		if(i==5){
+			document.getElementById("question").innerHTML='<h2>Task is Finished !! Wait for Results. </h2><button onclick=send() type="button" class="btn btn-secondary">Retry</button>';
+			ans=JSON.stringify(ans);
+			que=JSON.stringify(que);
+			console.log(ans);
+			console.log(que);
+			console.log(con);
+			send();
+		}
+		else{
+			j=i
+			j++
+			document.getElementById("question").innerHTML='<h5>Question '+j+'</h5> <img class="img-thumbnail" src="'+a[i][0]+'" height="200" width="300"><br><br><h6>Select a Picture from below which is relative to Primary Image </h6><br><a onClick=tick('+i+',1)><img class="img-thumbnail" src="'+a[i][1]+'"height="200" width="300">  </a><a onClick=tick('+i+',2)><img class="img-thumbnail" src="'+a[i][2]+'"height="200" width="300" >  </a><a onClick=tick('+i+',3)><img class="img-thumbnail" src="'+a[i][3]+'"height="200" width="300" >  </a><br><br>';
+			i++;
+		}
+	}
+</script>
+
+{% endblock %}

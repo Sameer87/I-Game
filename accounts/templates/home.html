@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  
+  <h5 class="float-right" >Your credits: {{ user.profile.coins }}</h5>
+  <h2>Welcome,  <small>{{ user.username }}</small>!</h2>
+  <hr>
+  <h2> Submissions </h2>
+  {% for i in Tasks %}
+  {% if i.state > 1 %}
+  <div class="alert alert-success" role="alert">
+  <h5>{{ i.created_at }}</h5><h6 class="float-right">Score - {{ i.score }}</h6>
+  <h5>Completed </h5>
+  </div>
+  {% else %}
+  <div class="alert alert-primary" role="alert">
+  <h5>{{ i.created_at }}</h5>
+  <h5> waiting </h5>
+  </div>
+  {% endif %}
+
+  {% endfor %}
+{% endblock %}
