@@ -5,6 +5,7 @@
 {% block content %}
   <h2>Welcome,  <small>{{ user.username }}</small>!</h2>
   <hr>
+  <label id="minutes">00</label>:<label id="seconds">00</label>
   <div class="container bg-light text-gray-dark" id="question"></div>
   <!--{% for x in que %}
     <img src="{{ x.Primary_img.url }}" height="200" width="300">
@@ -19,6 +20,10 @@
 
 {% block static %}
 <script type="text/javascript">
+	
+	var minutesLabel = document.getElementById("minutes");
+    var secondsLabel = document.getElementById("seconds");
+    var totalSeconds = 0;
 	a=[]
 	con={{ con }}
 	que=[]
@@ -33,19 +38,24 @@
 	{% endfor %}
 	i=0
 	ans=[]
+	min=[]
+	sec=[]
 	if (i==0){
 		console.log(con);
 		next();
 	}
 	function tick(id,val){
 		ans[id]=val;
+		min[id]=parseInt(totalSeconds/60);
+		sec[id]=parseInt(totalSeconds%60);
+		totalSeconds=0;
 		next();
 	}
 	function send(){
 		$.ajax({
                   url: "/check/",
                   type:'POST',
-                  data:{'ans':ans,'que':que,'con':con,'csrfmiddlewaretoken': "{{ csrf_token }}"},
+                  data:{'ans':ans,'que':que,'con':con,'min':min,'sec':sec,'csrfmiddlewaretoken': "{{ csrf_token }}"},
                   
                   success: function(result){
                   		window.location.href="/";
@@ -60,9 +70,13 @@
 			document.getElementById("question").innerHTML='<h2>Task is Finished !! Wait for Results. </h2><button onclick=send() type="button" class="btn btn-secondary">Retry</button>';
 			ans=JSON.stringify(ans);
 			que=JSON.stringify(que);
+			min=JSON.stringify(min);
+			sec=JSON.stringify(sec);
 			console.log(ans);
 			console.log(que);
 			console.log(con);
+			console.log(min);
+			console.log(sec);
 			send();
 		}
 		else{
@@ -72,6 +86,31 @@
 			i++;
 		}
 	}
+        setInterval(setTime, 1000);
+
+        function setTime()
+        {
+            ++totalSeconds;
+            secondsLabel.innerHTML = pad(totalSeconds%60);
+            minutesLabel.innerHTML = pad(parseInt(totalSeconds/60));
+        }
+
+        function pad(val)
+        {
+            var valString = val + "";
+            if(valString.length < 2)
+            {
+                return "0" + valString;
+            }
+            else
+            {
+                return valString;
+            }
+        }
+
+
+
 </script>
+
 
 {% endblock %}

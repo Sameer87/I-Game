@@ -1,4 +1,4 @@
-﻿# I Game
+# ESP Game
 
 
 Let’s suppose we have Player A and Player B. There are 15 questions in the system (i.e. 15 primary images). Each time Player A starts the game, he/she is shown 5 random primary images and secondary images corresponding to the primary image. 
@@ -17,9 +17,6 @@ $ virtualenv projectname
 ##### 2.Download
 Now, you need ESP Game project files in your workspace,So you can clone it easily
 
-```sh
-git clone https://github.com/Sameer87/I-Game.git
-```
 
 ##### 3.Requirements
 You can find all requirements in requirements.txt file and easily install them with 

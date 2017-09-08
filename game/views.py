@@ -2,10 +2,12 @@ from django.shortcuts import render,redirect
 import random
 import json
 from django.utils import timezone
-from .models import Question,Submission
+from .models import Question,Submission,connection
 from django.contrib.auth.models import User
 from accounts.models import Profile
 from django.contrib.auth.decorators import login_required
+
+numberofplayers = 4
 
 # Create your views here.
 @login_required
@@ -16,12 +18,21 @@ def home(request):
 
 @login_required
 def checking(request):
+	global numberofplayers
 	if request.method=="POST":
 		req=request.POST
 		con=req.get('con')
 		que=json.loads(req.get('que'))
 		ans=json.loads(req.get('ans'))
-		obj1=Submission.objects.create(username=request.user.username,que1=que[0],que2=que[1],que3=que[2],que4=que[3],que5=que[4],ans1=ans[0],ans2=ans[1],ans3=ans[2],ans4=ans[3],ans5=ans[4],conn=con,state=2)
+		minutes = json.loads(req.get('min'))
+		seconds = json.loads(req.get('sec'))
+		obj1=Submission.objects.create(username=request.user.username,que1=que[0],que2=que[1],que3=que[2],que4=que[3],que5=que[4],ans1=ans[0],ans2=ans[1],ans3=ans[2],ans4=ans[3],ans5=ans[4],conn=con,state=1)
+		obj1.save()
+		obj1.time1.replace(minute=minutes[0],second=seconds[0])
+		obj1.time2.replace(minute=minutes[1],second=seconds[1])
+		obj1.time3.replace(minute=minutes[2],second=seconds[2])
+		obj1.time4.replace(minute=minutes[3],second=seconds[3])
+		obj1.time5.replace(minute=minutes[4],second=seconds[4])
 		obj1.save()
 		print(con)
 		if con==-1 or con=='-1':
@@ -29,14 +40,47 @@ def checking(request):
 			obj1.save()
 		else :
 			obj2=Submission.objects.get(id=con)
-			if obj2.state==1:
-				obj2.state=2
+			if obj2.Sub<numberofplayers:
+				obj2.Sub+=1
 				obj2.save()
-				matching(obj1,obj2)
+				connect = connection.objects.create(submission1=con,submission2=obj1.id)
+				connect.save()
+				if obj2.Sub==numberofplayers:
+					matching_process(con)
 			else :
 				obj1.state=0
 				obj1.save()
 		return redirect("/")
+
+def matching_process(con):
+	list_of_pair_ids = connection.objects.filter(submission1=con)
+	listofsubmissions = []
+	obj=Submission.objects.get(id=con)
+	for x in list_of_pair_ids:
+		listofsubmissions.append(Submission.objects.get(id=x.submission2))
+	score=0
+	if all([x.ans1==obj.ans1 for x in listofsubmissions]):
+		score+=1
+	if all([x.ans2==obj.ans2 for x in listofsubmissions]):
+		score+=1
+	if all([x.ans3==obj.ans3 for x in listofsubmissions]):
+		score+=1
+	if all([x.ans4==obj.ans4 for x in listofsubmissions]):
+		score+=1
+	if all([x.ans5==obj.ans5 for x in listofsubmissions]):
+		score+=1
+	print(score)
+	print("matching")
+	listofsubmissions.append(obj)
+	for x in listofsubmissions:
+		x.score=score
+		x.state=2
+		x.save()
+		player1=User.objects.get(username=x.username)
+		player1.profile.coins+=score
+		player1.save()
+
+
 
 
 
@@ -75,18 +119,19 @@ def matching(obj1,obj2):
 	obj2.save()
 
 def get_questions():
-	objects = Submission.objects.all()
+	global numberofplayers
+	objects = Submission.objects.filter(state=0)
 	flag=0
 	for obj in objects:
 		print (obj.state)
-		if obj.state==0:
+		if obj.peers<numberofplayers:
 			a=[obj.que1,obj.que2,obj.que3,obj.que4,obj.que5,obj.id]
 			obj.conn_at=timezone.now()
-			obj.state=1
+			obj.peers+=1
 			obj.save()
 			flag=1
 			return a
-		elif obj.state==1:
+		else:
 			a=obj.conn_at
 			b=timezone.now()
 			c=b-a
@@ -94,7 +139,6 @@ def get_questions():
 			if minutes > 30:
 				li =[obj.que1,obj.que2,obj.que3,obj.que4,obj.que5,obj.id]
 				obj.conn_at=timezone.now()
-				obj.state=1
 				obj.save()
 				flag=1
 				return li
