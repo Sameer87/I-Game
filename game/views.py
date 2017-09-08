@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 import random
 import json
+import datetime
 from django.utils import timezone
 from .models import Question,Submission,connection
 from django.contrib.auth.models import User
@@ -28,11 +29,18 @@ def checking(request):
 		seconds = json.loads(req.get('sec'))
 		obj1=Submission.objects.create(username=request.user.username,que1=que[0],que2=que[1],que3=que[2],que4=que[3],que5=que[4],ans1=ans[0],ans2=ans[1],ans3=ans[2],ans4=ans[3],ans5=ans[4],conn=con,state=1)
 		obj1.save()
-		obj1.time1.replace(minute=minutes[0],second=seconds[0])
-		obj1.time2.replace(minute=minutes[1],second=seconds[1])
-		obj1.time3.replace(minute=minutes[2],second=seconds[2])
-		obj1.time4.replace(minute=minutes[3],second=seconds[3])
-		obj1.time5.replace(minute=minutes[4],second=seconds[4])
+		x=datetime.datetime.now()
+		x=x.replace(microsecond=0,hour=0)
+		x=x.replace(minute=minutes[0],second=seconds[0])
+		obj1.time1=x.time()
+		x=x.replace(minute=minutes[1],second=seconds[1])
+		obj1.time2=x.time()
+		x=x.replace(minute=minutes[2],second=seconds[2])
+		obj1.time3=x.time()
+		x=x.replace(minute=minutes[3],second=seconds[3])
+		obj1.time4=x.time()
+		x=x.replace(minute=minutes[4],second=seconds[4])
+		obj1.time5=x.time()
 		obj1.save()
 		print(con)
 		if con==-1 or con=='-1':
